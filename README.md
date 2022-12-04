@@ -5,6 +5,10 @@ Uma breve descrição sobre o que esse projeto faz e para quem ele é
 
 <b>This tutorial is based on 5G_SA... tutorial available on Open Air Interface repository.</b>
 
+**Table of Contents**
+
+[[_TOC_]]
+
 ## 1. Scenario
 
 The setup described in this tutorial was done in a single PC, running the OAI-5GCN, OAI-gNB and OAI-UE. Two scenarios are considered: the first one is the monolithic gNB and the second one is the gNB with CU/DU split.
@@ -90,6 +94,6 @@ The OAI 5G core network creates a network interface called "demo-oai". For a mon
 
 ## 3. OAI-gNB
 
-## Running scenario 1
+## 4. Running scenario 1
 
-## Running scenario 2
+## 5. Running scenario 2
