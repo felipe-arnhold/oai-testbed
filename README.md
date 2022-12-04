@@ -6,9 +6,7 @@ Uma breve descrição sobre o que esse projeto faz e para quem ele é
 
 ## 1. Scenario
 
-The setup described in this tutorial was done in a single PC, running the OAI-5GCN, OAI-gNB and OAI-UE.
-
-
+The setup described in this tutorial was done in a single PC, running the OAI-5GCN, OAI-gNB and OAI-UE. Two scenarios are considered: the first one is the monolithic gNB and the second one is the gNB with CU/DU split.
 
 - PC configurations
     - OS: Ubuntu 20.04
