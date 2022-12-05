@@ -3,7 +3,7 @@
 
 Uma breve descrição sobre o que esse projeto faz e para quem ele é
 
-<b>This tutorial is based on 5G_SA... tutorial available on Open Air Interface repository.</b>
+**This tutorial is based on 5G_SA... tutorial available on Open Air Interface repository.**
 
 ## 1. Scenario
 
@@ -46,14 +46,58 @@ The setup described in this tutorial was done in a single PC, running the OAI-5G
 
 ## 2. OAI-5GCN
 
-### Installing the pre-requisites
+### 2.1. Installing the pre-requisites
+
+Verify python version. It must be at least 3.6
+
+```console
+python3 --version
+```
+Install git, net-tools, putty and the proper version of docker.
+
+```console
+sudo apt install -y git net-tools putty
+
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+sudo apt update
+sudo apt install -y docker docker-ce
+
+sudo usermod -a -G docker $(whoami)
+reboot
+
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
 
 #### Wireshark (Optional)
+##### Installing
+Wireshark is a well know software to analyse network traffic. One of the communication protocols between gNB and CN is NGAP, which is available only on development version. To install it, run the following commands:
 
-Wireshark is a well know software to analyse network traffic. One of the communication protocols between gNB and CN is NGAP, which is not available on release version of Wireshark. 
+```console
+sudo add-apt-repository ppa:wireshark-dev/stable
+sudo apt update
+sudo apt install wireshark
+```
+After installation, you can check Wireshark version with `Wireshark --version` command. It must be higher than 2.9.x.
 
-### Setup
-### Configuration
+```console
+Wireshark 3.4.7 (Git v3.4.7 packaged as 3.4.7-1~ubuntu18.04.0+wiresharkdevstable1)
+```
+
+##### Running
+To run Wireshark properly, it must run with admin privileges. Open a new terminal and run the software with `sudo wireshark` command.
+
+### 2.2 Setup
+
+```console
+git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git ~/oai-cn5g-fed
+cd ~/oai-cn5g-fed
+git checkout v1.4.0
+```
+
+### 2.3. Configuration
 
 For this tutorial, it is used CN basic configuration. The only thing that must be updated is the .yaml file to match common configuration of network and add the UE IMSI data to the CN database.
 
