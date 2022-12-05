@@ -20,11 +20,11 @@ The setup described in this tutorial was done in a single PC, running the OAI-5G
     - Memory: 16 GB DDR4 XX MHz
     - Storage: 512 GB NVMe 4
 - OAI-5GCN
-    - Master branch
+    - Branch: v1.4.0
     - Basic run
 - OAI-gNB
     - Branch develop
-    - Commit: 0xXX
+    - Tag: 0xXX
     - Band: n78
     - Bandwidth: 40 MHz (106 PRBs)
     - USRP: National Instruments USRP-2901 (Ettus B210)
@@ -36,7 +36,9 @@ The setup described in this tutorial was done in a single PC, running the OAI-5G
     - Bandwidth: 40 MHz (106 PRBs)
     - USRP: National Instruments USRP-2901 (Ettus B210)
     - Antenna: Wideband (600 MHz to 6 GHz) SMA antenna
-    - IMSI: 
+    - IMSI: 208990000007487
+    - Key: fec86ba6eb707ed08905757b1bb44b8f
+    - OpcKey: C42449363BBAD02B66D16BC975D77CC1
 - Common configuration
     - MCC (Mobile Country Code): 208
     - MNC (Mobile Network Code): 99
@@ -65,7 +67,7 @@ sudo apt update
 sudo apt install -y docker docker-ce
 
 sudo usermod -a -G docker $(whoami)
-reboot
+sudo reboot
 
 sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
@@ -80,10 +82,10 @@ sudo add-apt-repository ppa:wireshark-dev/stable
 sudo apt update
 sudo apt install wireshark
 ```
-After installation, you can check Wireshark version with `Wireshark --version` command. It must be higher than 2.9.x.
+After installation, you can check Wireshark version with `wireshark --version` command. It must be higher than 2.9.x.
 
 ```console
-Wireshark 3.4.7 (Git v3.4.7 packaged as 3.4.7-1~ubuntu18.04.0+wiresharkdevstable1)
+Wireshark 3.6.7 (Git v3.6.7 packaged as 3.6.7-1~ubuntu20.04.0+wiresharkdevstable)
 ```
 
 ##### Running
@@ -91,10 +93,43 @@ To run Wireshark properly, it must run with admin privileges. Open a new termina
 
 ### 2.2 Setup
 
+Download OAI 5G core network and checkout to latest tag (v1.4.0)
+
 ```console
 git clone https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed.git ~/oai-cn5g-fed
 cd ~/oai-cn5g-fed
 git checkout v1.4.0
+```
+Pull CN services images
+
+```console
+#!/bin/bash
+docker pull oaisoftwarealliance/oai-amf:v1.4.0
+docker pull oaisoftwarealliance/oai-nrf:v1.4.0
+docker pull oaisoftwarealliance/oai-spgwu-tiny:v1.4.0
+docker pull oaisoftwarealliance/oai-smf:v1.4.0
+docker pull oaisoftwarealliance/oai-udr:v1.4.0
+docker pull oaisoftwarealliance/oai-udm:v1.4.0
+docker pull oaisoftwarealliance/oai-ausf:v1.4.0
+docker pull oaisoftwarealliance/oai-upf-vpp:v1.4.0
+docker pull oaisoftwarealliance/oai-nssf:v1.4.0
+# Utility image to generate traffic
+docker pull oaisoftwarealliance/trf-gen-cn5g:latest
+```
+Re-tag images
+
+```console
+#!/bin/bash
+docker image tag oaisoftwarealliance/oai-amf:v1.4.0 oai-amf:v1.4.0
+docker image tag oaisoftwarealliance/oai-nrf:v1.4.0 oai-nrf:v1.4.0
+docker image tag oaisoftwarealliance/oai-smf:v1.4.0 oai-smf:v1.4.0
+docker image tag oaisoftwarealliance/oai-spgwu-tiny:v1.4.0 oai-spgwu-tiny:v1.4.0
+docker image tag oaisoftwarealliance/oai-udr:v1.4.0 oai-udr:v1.4.0
+docker image tag oaisoftwarealliance/oai-udm:v1.4.0 oai-udm:v1.4.0
+docker image tag oaisoftwarealliance/oai-ausf:v1.4.0 oai-ausf:v1.4.0
+docker image tag oaisoftwarealliance/oai-upf-vpp:v1.4.0 oai-upf-vpp:v1.4.0
+docker image tag oaisoftwarealliance/oai-nssf:v1.4.0 oai-nssf:v1.4.0
+docker image tag oaisoftwarealliance/trf-gen-cn5g:latest trf-gen-cn5g:latest
 ```
 
 ### 2.3. Configuration
@@ -126,21 +161,93 @@ For this tutorial, it is used CN basic configuration. The only thing that must b
         NSSAI_SST_0=1
         NSSAI_SD_0=1
         ```
-- Add UE IMSI to the database file ([oai_db2.sql](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docker-compose/database/oai_db2.sql))
+- Add UE IMSI to the database file ([oai_db2.sql](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/v1.4.0/docker-compose/database/oai_db2.sql))
     - Search for 
         ```
         INSERT INTO `AuthenticationSubscription` (`ueid`, `authenticationMethod`, `encPermanentKey`, `protectionParameterId`, `sequenceNumber`, `authenticationManagementField`, `algorithmId`, `encOpcKey`, `encTopcKey`, `vectorGenerationInHss`, `n5gcAuthMethod`, `rgAuthenticationInd`, `supi`) VALUES
         ```
     - Add UE data to this query
         ```
-        ('XX', 'XX', 'XX', 'XX', '{\"sqn\": \"000000000020\", \"sqnScheme\": \"NON_TIME_BASED\", \"lastIndexes\": {\"ausf\": 0}}', '8000', 'milenage', 'XX', NULL, NULL, NULL, NULL, 'XX'),
+        ('208990000007487', '5G_AKA', 'fec86ba6eb707ed08905757b1bb44b8f', 'fec86ba6eb707ed08905757b1bb44b8f', '{\"sqn\": \"000000000020\", \"sqnScheme\": \"NON_TIME_BASED\", \"lastIndexes\": {\"ausf\": 0}}', '8000', 'milenage', 'C42449363BBAD02B66D16BC975D77CC1', NULL, NULL, NULL, NULL, '208990000007487');
+        ```
+    - Search for
+        ```
+        INSERT INTO `SessionManagementSubscriptionData` (`ueid`, `servingPlmnid`, `singleNssai`, `dnnConfigurations`) VALUES
+        ```
+    - Add UE data to this query
+        ```
+        ('208990000007487', '20895', '{\"sst\": 222, \"sd\": \"123\"}','{\"default\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"IPV4\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"100Mbps\", \"downlink\":\"100Mbps\"},\"staticIpAddress\":[{\"ipv4Addr\": \"12.1.1.4\"}]}}');
         ```
         
 ## 3. OAI-gNB
 
+The installation, buildiung and configuration are the same for all scenarios. On scenario 3, these instructions must be done on all PCs.
+
 ### Installing the pre-requisites
 
+Install the tools:
+- libboost
+- libusb
+- doxygen
+- python3-docutils
+- python3-mako
+- python3-numpy
+- python3-requests
+- python3-ruamel.yaml
+- python3-setuptools
+- cmake
+- build-essential
+
+```console
+sudo apt install -y libboost-all-dev libusb-1.0-0-dev doxygen python3-docutils python3-mako python3-numpy python3-requests python3-ruamel.yaml python3-setuptools cmake build-essential
+```
+
+Build UHD from source. This is needed to do the USRP communication.
+
+```console
+git clone https://github.com/EttusResearch/uhd.git ~/uhd
+cd ~/uhd
+git checkout v4.0.0.0
+cd host
+mkdir build
+cd build
+cmake ../
+make -j 4
+make test # This step is optional
+sudo make install
+sudo ldconfig
+sudo uhd_images_downloader
+```
+
 ### gNB setup and building
+
+Download RAN code and checkout to 2022.w42 tag
+
+```console
+# Get openairinterface5g source code
+git clone https://gitlab.eurecom.fr/oai/openairinterface5g.git ~/openairinterface5g
+cd ~/openairinterface5g
+git checkout 2022.w42
+```
+
+Install dependencies
+
+```console
+# Install dependencies in Ubuntu 20.04
+cd ~/openairinterface5g
+source oaienv
+cd cmake_targets
+./build_oai -I
+```
+
+Build nr-gNB and nr-UE with USRP as radio interface, and additional libraries to debug
+
+```console
+cd ~/openairinterface5g
+source oaienv
+cd cmake_targets
+./build_oai -w USRP --ninja --nrUE --gNB --build-lib all -c
+```
 
 ### Configuration file
 
