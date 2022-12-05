@@ -7,7 +7,10 @@ Uma breve descrição sobre o que esse projeto faz e para quem ele é
 
 ## 1. Scenario
 
-The setup described in this tutorial was done in a single PC, running the OAI-5GCN, OAI-gNB and OAI-UE. Two scenarios are considered: the first one is the monolithic gNB and the second one is the gNB with CU/DU split.
+The setup described in this tutorial was done in a single PC, running the OAI-5GCN, OAI-gNB and OAI-UE. Three scenarios are considered
+    1. Monolithic gNB
+    2. CU/DU split
+    3. CU/DU split with CU running in a virtual machine
 
 <img src="figures/scenarios_v2.svg" width="1000">
 
@@ -40,10 +43,14 @@ The setup described in this tutorial was done in a single PC, running the OAI-5G
     - TAC (Tracking Area Code): 0x01
     - SST (Slice/Service Type): 0x01
     - SD (Slice Diferentiator): 0x01
-    
+
 ## 2. OAI-5GCN
 
 ### Installing the pre-requisites
+
+#### Wireshark (Optional)
+
+Wireshark is a well know software to analyse network traffic. One of the communication protocols between gNB and CN is NGAP, which is not available on release version of Wireshark. 
 
 ### Setup
 ### Configuration
@@ -84,12 +91,42 @@ For this tutorial, it is used CN basic configuration. The only thing that must b
         ```
         ('XX', 'XX', 'XX', 'XX', '{\"sqn\": \"000000000020\", \"sqnScheme\": \"NON_TIME_BASED\", \"lastIndexes\": {\"ausf\": 0}}', '8000', 'milenage', 'XX', NULL, NULL, NULL, NULL, 'XX'),
         ```
+        
+## 3. OAI-gNB
+
+### Installing the pre-requisites
+
+### gNB setup and building
+
+### Configuration file
+
+## 4. Running scenario 1
+
+- Run the Core Network
+- Run the gNB
+- Run the UE
+
+## 5. Running scenario 2
+
+- Run the Core Network
+- Run the gNB-CU
+- Run the gNB-DU
+- Run the UE
+
+## 6. Running scenario 3
+
+- Modifications on configuration files
+- Run the core network
+
 - Note
 
 The OAI 5G core network creates a network interface called "demo-oai". For a monolithic version, where CN and gNB are in the same machine, everything works fine. However, placing the gNB in another machine, it will be necessary to allow IP packages forwarding on CN machine and add an IP route to the gNB machine.
 
-## 3. OAI-gNB
+- Run the gNB-CU
+- Run the gNB-DU
+- Run the UE
 
-## 4. Running scenario 1
+## Testing
 
-## 5. Running scenario 2
+### Ping
+### iperf
