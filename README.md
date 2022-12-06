@@ -28,15 +28,15 @@ The setup described in this tutorial was done in a single PC, running the OAI-5G
     - Branch: v1.4.0
     - Basic run
 - OAI-gNB
-    - Branch develop
-    - Tag: 0xXX
+    - Branch: develop
+    - Tag: 2022.w42
     - Band: n78
     - Bandwidth: 40 MHz (106 PRBs)
     - USRP: National Instruments USRP-2901 (Ettus B210)
     - Antenna: Wideband (600 MHz to 6 GHz) SMA antenna
 - OAI-UE
-    - Branch develop
-    - Commit: 0xXX
+    - Branch: develop
+    - Tag: 2022.w42
     - Band: n78
     - Bandwidth: 40 MHz (106 PRBs)
     - USRP: National Instruments USRP-2901 (Ettus B210)
