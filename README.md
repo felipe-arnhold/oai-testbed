@@ -334,6 +334,8 @@ cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
+**Note: There should be only one USRP connected to the USB 3.0 before starting gNB. After started, the second USRP (for UE) can be connected.**
+
 - Run the UE
 
 ```console
@@ -341,7 +343,7 @@ cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
 ```
 
-## 5. Running scenario 2
+## 5. Scenario 2
 
 In scenario 2, the gNB is split in CU and DU. The CU has the PDCP and RRC layers and DU has the RLC, MAC and PHY layers. This split is done through configuration file.
 
@@ -387,6 +389,8 @@ MACRLCs = (
 
 Since the DU does not communicate directly to the core, the `amf_ip_address` and `NETWORK_INTERFACES` parameters are removed.
 
+### Running scenario 2
+
 - Run the Core Network
 
 ```console
@@ -415,9 +419,13 @@ cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
 ```
 
-## 6. Running scenario 3
+## 6. Scenario 3
+
+In this scenario, the CU runs in a virtual machine, to simulate the CU/DU split in different PCs. The software used to run the CU is the Virtual Box, also with Ubuntu 20.04.5 LTS. The network interface was configured as bridge, so the VM will receive an IP inside the same network of main PC.
+Now, the interfaces configured to CU and DU must be updated, since localhost is not used.
 
 - Modifications on configuration files
+
 - Run the core network
 
 ```console
