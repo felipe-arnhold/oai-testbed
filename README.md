@@ -1,9 +1,7 @@
 
 # 5G Stand Alone Enviroment using Open Air Interface
 
-Uma breve descrição sobre o que esse projeto faz e para quem ele é
-
-**This tutorial is based on 5G_SA... tutorial available on Open Air Interface repository.**
+This tutorial describes how to setup a complete 5G Stand Alone testbed using the Open Air Interface (OAI) projects. Section 1 has a description of the considered scenarios, and the hardware and software specifications used to run the components. Section 2 presents the necessary steps to download and confiure the OAI core network (OAI-5GCN). The section 3 is optional and shows how to install the Wireshark software. Section 4 presents the download, configuration and build steps to OAI gNB (OAI-gNB). Section 5 presents the OAI user equipment (OAI-UE) configuration file. Section 6, 7 and 8 present the step to configure and run scenarios 1, 2 and 3, respectively. And section 9 presents some possible tools that can be used to test UE/CN communication.
 
 ## 1. Scenario
 
