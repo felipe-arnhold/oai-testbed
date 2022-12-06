@@ -271,30 +271,159 @@ cd cmake_targets
 
 ### Configuration file
 
-This tutorial uses the default configuration file for band n78 with 106 PRBs as base.
+This tutorial uses the default [configuration file for band n78 with 106 PRBs](https://gitlab.eurecom.fr/oai/openairinterface5g/-/blob/2022.w42/targets/PROJECTS/GENERIC-NR-5GC/CONF/gnb.sa.band78.fr1.106PRB.usrpb210.conf) as base.
 
 The common configuration for all scenarios is the frequency configuration and supported PLMN.
 
+The figure bellow shows the frequency allocation configured for band n78. There are 106 physical resources blocks (PRBs) and a sub-carrier spacing of 30 kHz, which combined represent a bandwidth of 40 MHz. The absolute point A frequency is 640008, which corresponds to 3600.120 MHz. The SS Block (yellow) is positioned in the middle of the bandwidth, at 641280 (3619.200 MHz). The initial bandwidth part (blue) corresponds to the total bandwidth. The value of controlResourceSetZero is 12, which correspond to a CORESET (red) 48 PRBs long starting at PRB 16 (3GPP 38.213, 13-4 Table).
+
+<img src="figures/Frequency_allocation.svg" width="300">
+
+To support the PLMN configured on UE and CN, replace `tracking_area_code` and `plmn_list` to the code bellow:
+
+```
+tracking_area_code  =  1;
+    plmn_list = ({
+                  mcc = 208;
+                  mnc = 99;
+                  mnc_length = 2;
+                  snssaiList = (
+                    {
+                      sst = 1;
+                      sd  = 0x1; // 0 false, else true
+                    }
+                  );
+                  });
+```
+
+**Due some restrictions, it is needed to add the following line to the gNB configuration (after `nr_cellid = 12345678L;`)**
+```
+min_rxtxtime = 6;
+```
 
 ## 4. UE configuration file
 
+The UE configuration file consists on IMSI number and the keys
+
+```
+uicc0 = {
+imsi = "208990000007487";
+key = "fec86ba6eb707ed08905757b1bb44b8f";
+opc= "C42449363BBAD02B66D16BC975D77CC1";
+dnn= "oai";
+nssai_sst=1;
+nssai_sd=1;
+}
+```
+
 ## 4. Running scenario 1
 
+The scenario 1 is the monolithic version.
+
 - Run the Core Network
+
+```console
+cd ~/oai-cn5g-fed/docker-compose/
+python3 core-network.py --type start-basic --scenario 1
+```
+
 - Run the gNB
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+```
+
 - Run the UE
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+```
 
 ## 5. Running scenario 2
 
+In scenario 2, the gNB is split in CU and DU. The CU has the PDCP and RRC layers and DU has the RLC, MAC and PHY layers. This split is done through configuration file.
+
+### Prepare the CU condiguration file
+
+For CU, it is necessary to add the interface configuration to the gNB configuration (after `nr_cellid = 12345678L;`). The used interface is the F1 through localhost (lo) network interface.
+Local address is the CU IP and remote address is the DU IP through lo interface. Two ports must be defined (c and d)
+
+```
+tr_s_preference = "f1";
+local_s_if_name = "lo";
+local_s_address = "127.0.0.4";
+remote_s_address = "127.0.0.3";
+local_s_portc   = 501;
+local_s_portd   = 2152;
+remote_s_portc  = 500;
+remote_s_portd  = 2152;
+```
+
+Since the CU does not have RLC, MAC and PHY layers, the `MACRLCs`, `L1s` and `RUs` parametes must be removed.
+
+### Prepare the DU condiguration file
+
+For DU, the F1 interface must be configured inside MACRLC configuration. This information must match the information defined in the CU configuration file. Now, the local is the DU IP and remote the CU IP.
+
+```
+MACRLCs = (
+  {
+    num_cc           = 1;
+    tr_s_preference  = "local_L1";
+    tr_n_preference  = "f1";
+    local_n_if_name = "lo";
+    local_n_address = "127.0.0.3";
+    remote_n_address = "127.0.0.4";
+    local_n_portc   = 500;
+    local_n_portd   = 2152;
+    remote_n_portc  = 501;
+    remote_n_portd  = 2152;
+
+  }
+);
+```
+
+Since the DU does not communicate directly to the core, the `amf_ip_address` and `NETWORK_INTERFACES` parameters are removed.
+
 - Run the Core Network
+
+```console
+cd ~/oai-cn5g-fed/docker-compose/
+python3 core-network.py --type start-basic --scenario 1
+```
+
 - Run the gNB-CU
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+```
+
 - Run the gNB-DU
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+```
+
 - Run the UE
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+```
 
 ## 6. Running scenario 3
 
 - Modifications on configuration files
 - Run the core network
+
+```console
+cd ~/oai-cn5g-fed/docker-compose/
+python3 core-network.py --type start-basic --scenario 1
+```
 
 - Note
 
@@ -316,9 +445,26 @@ To test it, ping any CN service from gNB machine, for example:
 ping 192.168.70.134
 ```
 
-- Run the gNB-CU
+- Run the gNB-CU on the virtual machine
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+```
+
 - Run the gNB-DU
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+```
+
 - Run the UE
+
+```console
+cd ~/openairinterface5g/cmake_targets/ran_build/build/
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+```
 
 ## Testing
 
