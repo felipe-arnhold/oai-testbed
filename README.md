@@ -136,7 +136,7 @@ docker image tag oaisoftwarealliance/trf-gen-cn5g:latest trf-gen-cn5g:latest
 
 For this tutorial, it is used CN basic configuration. The only thing that must be updated is the .yaml file to match common configuration of network and add the UE IMSI data to the CN database.
 
-- Change [docker-compose-basic-nrf.yaml](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/blob/master/docker-compose/docker-compose-basic-nrf.yaml) configuration file
+- Change [docker-compose-basic-nrf.yaml](https://gitlab.eurecom.fr/oai/cn5g/oai-cn5g-fed/-/tree/v1.4.0/docker-compose/docker-compose-basic-nrf.yaml) configuration file
     - On oai-amf:
         ```
         SERVED_GUAMI_MCC_0=208
@@ -178,7 +178,19 @@ For this tutorial, it is used CN basic configuration. The only thing that must b
         ```
         ('208990000007487', '20895', '{\"sst\": 222, \"sd\": \"123\"}','{\"default\":{\"pduSessionTypes\":{ \"defaultSessionType\": \"IPV4\"},\"sscModes\": {\"defaultSscMode\": \"SSC_MODE_1\"},\"5gQosProfile\": {\"5qi\": 6,\"arp\":{\"priorityLevel\": 1,\"preemptCap\": \"NOT_PREEMPT\",\"preemptVuln\":\"NOT_PREEMPTABLE\"},\"priorityLevel\":1},\"sessionAmbr\":{\"uplink\":\"100Mbps\", \"downlink\":\"100Mbps\"},\"staticIpAddress\":[{\"ipv4Addr\": \"12.1.1.4\"}]}}');
         ```
-        
+
+The following services will be set up:
+
+- mysql : 192.168.70.131
+- udr: 192.168.70.136
+- udm: 192.168.70.137
+- ausf: 192.168.70.138
+- nrf: 192.168.70.130
+- amf: 192.168.70.132
+- smf: 192.168.70.133
+- spgwu/upf: 192.168.70.134
+- ext-dn: 192.168.70.135
+     
 ## 3. OAI-gNB
 
 The installation, buildiung and configuration are the same for all scenarios. On scenario 3, these instructions must be done on all PCs.
@@ -240,7 +252,13 @@ cd cmake_targets
 ./build_oai -I
 ```
 
-Build nr-gNB and nr-UE with USRP as radio interface, and additional libraries to debug
+Build the gNB and nrUE:
+- -w USRP: build the software to use USRP as radio interface
+- --ninja: Tell the compiler to use Ninja build system
+- --nrUE: build new radio User Equipment
+- --gNB: build new radio gNB
+- --build-lib all: build all additional libraries
+- -c: clear previous builds
 
 ```console
 cd ~/openairinterface5g
@@ -249,7 +267,16 @@ cd cmake_targets
 ./build_oai -w USRP --ninja --nrUE --gNB --build-lib all -c
 ```
 
+*For more build options, run ./build_oai --help
+
 ### Configuration file
+
+This tutorial uses the default configuration file for band n78 with 106 PRBs as base.
+
+The common configuration for all scenarios is the frequency configuration and supported PLMN.
+
+
+## 4. UE configuration file
 
 ## 4. Running scenario 1
 
@@ -272,6 +299,22 @@ cd cmake_targets
 - Note
 
 The OAI 5G core network creates a network interface called "demo-oai". For a monolithic version, where CN and gNB are in the same machine, everything works fine. However, placing the gNB in another machine, it will be necessary to allow IP packages forwarding on CN machine and add an IP route to the gNB machine.
+
+On core network machine:
+```console
+sudo sysctl net.ipv4.conf.all.forwarding=1
+sudo iptables -P FORWARD ACCEPT
+```
+
+On gNB-CU machine (replace IP_CN to actual IP of CN machine):
+```console
+sudo ip route add 192.168.70.128/26 via IP_CN
+```
+
+To test it, ping any CN service from gNB machine, for example:
+```console
+ping 192.168.70.134
+```
 
 - Run the gNB-CU
 - Run the gNB-DU
