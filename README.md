@@ -331,7 +331,7 @@ nssai_sd=1;
 
 This file is located at [oai-testbed/oai-cfg-files/ue.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/ue.conf)
 
-## 6. Running scenario 1
+## 6. Scenario 1
 
 The scenario 1 is the monolithic version.
 
