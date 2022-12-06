@@ -238,6 +238,12 @@ sudo ldconfig
 sudo uhd_images_downloader
 ```
 
+Clone this repository to get gNB configuration files.
+
+```console
+git clone https://github.com/felipe-arnhold/oai-testbed.git ~/oai-testbed
+```
+
 ### gNB setup and building
 
 Download RAN code and checkout to 2022.w42 tag
@@ -323,6 +329,8 @@ nssai_sd=1;
 }
 ```
 
+This file is located in [oai-testbed/oai-cfg-files/ue.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/ue.conf)
+
 ## 4. Running scenario 1
 
 The scenario 1 is the monolithic version.
@@ -338,16 +346,26 @@ python3 core-network.py --type start-basic --scenario 1
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
 **Note: There should be only one USRP connected to the USB 3.0 before starting gNB. After started, the second USRP (for UE) can be connected.**
 
 - Run the UE
 
+To run the OAI-UE, some information must be passed through command line.
+
+- -r (Bandwidth in number of PRBs): 106
+- --numerology (Subcarriers spacing): 1 (30 kHz)
+- --band: 78
+- -C (Frequency of point A): 3619,2 MHz
+- --ue-fo-compensation: Better RF
+- --sa: Stand alone
+- -E: three-quarter of sampling frequency.
+
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --ue-fo-compensation --sa -E -O ~/oai-testbed/oai-cfg-files/ue.conf
 ```
 
 ## 5. Scenario 2
@@ -409,21 +427,21 @@ python3 core-network.py --type start-basic --scenario 1
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
 - Run the gNB-DU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
 - Run the UE
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --ue-fo-compensation --sa -E -O ~/oai-testbed/oai-cfg-files/ue.conf
 ```
 
 ## 6. Scenario 3
@@ -464,21 +482,21 @@ ping 192.168.70.134
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
 ### Run the gNB-DU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
 ### Run the UE
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-cfg-files/ue.conf
+sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-testbed/oai-cfg-files/ue.conf
 ```
 
 ## Testing
