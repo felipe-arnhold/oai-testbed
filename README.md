@@ -552,3 +552,51 @@ sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.u
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-testbed/oai-cfg-files/ue.conf
 ```
+
+## 9. Testing
+
+### 9.1. ping
+
+To perform a ping test, the IP address of UE must be know. This can be achieved running `ifconfig` on the UE machine (same as DU and CN) and search for the `oai-tun1` network interface (created by OAI-UE).
+
+- For Uplink test, open a new terminal on UE machine and ping to CN. The interface `oai-tun1` must be defined.
+
+```console
+ping 192.168.70.135 -I oai-tun1
+```
+
+- For Downlink test, open a new terminal on CN and ping to UE through docker. Replace UE_IP to actual user equipment IP address.
+- 
+```console
+docker exec -it oai-ext-dn ping UE_IP
+```
+
+### 9.2. iperf
+
+The iperf test opens a server and a client and can be used to test throughput.
+
+- For uplink test, open a server on the UE side and a client on the CN side with 10 M of bandwith. Replace UE_IP to actual user equipment IP address.
+    - On UE:
+    
+    ```console
+    iperf -s -u -i 1 -B UE_IP
+    ```
+    
+    - On CN:
+    
+    ```console
+    docker exec -it oai-ext-dn iperf -u -t 86400 -i 1 -fk -B 192.168.70.135 -b 10M -c UE_IP
+    ```
+    
+- For downlik, open a server on the CN side and a client on the UE side with 10 M of bandwith. Replace UE_IP to actual user equipment IP address.
+    - On UE:
+    
+    ```console
+    iperf -u -t 86400 -i 1 -fk -B UE_IP -b 10M -c 192.168.70.135
+    ```
+    
+    - On CN:
+    
+    ```console
+    docker exec -it oai-ext-dn iperf -s -u -i 1 -B 192.168.70.135
+    ```
