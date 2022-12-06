@@ -329,7 +329,7 @@ nssai_sd=1;
 }
 ```
 
-This file is located in [oai-testbed/oai-cfg-files/ue.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/ue.conf)
+This file is located at [oai-testbed/oai-cfg-files/ue.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/ue.conf)
 
 ## 4. Running scenario 1
 
@@ -372,7 +372,7 @@ sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --ue-fo-comp
 
 In scenario 2, the gNB is split in CU and DU. The CU has the PDCP and RRC layers and DU has the RLC, MAC and PHY layers. This split is done through configuration file.
 
-### Prepare the CU condiguration file
+### 5.1 Prepare the CU condiguration file
 
 For CU, it is necessary to add the interface configuration to the gNB configuration (after `nr_cellid = 12345678L;`). The used interface is the F1 through localhost (lo) network interface.
 Local address is the CU IP and remote address is the DU IP through lo interface. Two ports must be defined (c and d)
@@ -390,7 +390,9 @@ remote_s_portd  = 2152;
 
 Since the CU does not have RLC, MAC and PHY layers, the `MACRLCs`, `L1s` and `RUs` parametes must be removed.
 
-### Prepare the DU configuration file
+The CU configuration file is located at [oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf)
+
+### 5.2 Prepare the DU configuration file
 
 For DU, the F1 interface must be configured inside MACRLC configuration. This information must match the information defined in the CU configuration file. Now, the local is the DU IP and remote the CU IP.
 
@@ -414,30 +416,32 @@ MACRLCs = (
 
 Since the DU does not communicate directly to the core, the `amf_ip_address` and `NETWORK_INTERFACES` parameters are removed.
 
-### Running scenario 2
+The DU configuration file is located at [oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf](https://github.com/felipe-arnhold/oai-testbed/blob/main/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf)
 
-- Run the Core Network
+### 5.3 Running scenario 2
+
+####  5.3.1 Run the Core Network
 
 ```console
 cd ~/oai-cn5g-fed/docker-compose/
 python3 core-network.py --type start-basic --scenario 1
 ```
 
-- Run the gNB-CU
+####  5.3.2 Run the gNB-CU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
-- Run the gNB-DU
+####  5.3.3 Run the gNB-DU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
-- Run the UE
+####  5.3.4 Run the UE
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
@@ -449,16 +453,62 @@ sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --ue-fo-comp
 In this scenario, the CU runs in a virtual machine, to simulate the CU/DU split in different PCs. The software used to run the CU is the Virtual Box, also with Ubuntu 20.04.5 LTS. The network interface was configured as bridge, so the VM will receive an IP inside the same network of main PC.
 Now, the interfaces configured to CU and DU must be updated, since localhost is not used.
 
-### Modifications on configuration files
+### 6.1 Modifications on configuration files
 
-### Run the core network
+In the CU configuration file, the netwrok interface and IP addresses must be updated. This information can be achieved running `ifconfig` command.
+In this case, in the CU side, the network interface is `enp0s3`, the IP of VM is `191.4.204.57` and the IP of the machine were DU is placed is `191.4.204.111`.
+
+```
+tr_s_preference = "f1";
+local_s_if_name = "enp0s3";
+local_s_address = "191.4.204.57";
+remote_s_address = "191.4.204.111";
+local_s_portc   = 501;
+local_s_portd   = 2153;
+remote_s_portc  = 500;
+remote_s_portd  = 2153;
+```
+
+The `NETWORK_INTERFACES` parameter must be updated also with network interface and local IP.
+
+```
+NETWORK_INTERFACES :
+    {
+        GNB_INTERFACE_NAME_FOR_NG_AMF            = "enp0s3";
+        GNB_IPV4_ADDRESS_FOR_NG_AMF              = "191.4.204.57";
+        GNB_INTERFACE_NAME_FOR_NGU               = "enp0s3";
+        GNB_IPV4_ADDRESS_FOR_NGU                 = "191.4.204.57";
+        GNB_PORT_FOR_S1U                         = 2152; # Spec 2152
+    };
+```
+
+At DU side, the same thing must be done, but now in the `MACRLC` parameter. Note that the interface is `enp0s4` now.
+
+```
+MACRLCs = (
+  {
+    num_cc           = 1;
+    tr_s_preference  = "local_L1";
+    tr_n_preference  = "f1";
+    local_n_if_name = "enp4s0";
+    local_n_address = "191.4.204.111";
+    remote_n_address = "191.4.204.57";
+    local_n_portc   = 500;
+    local_n_portd   = 2153;
+    remote_n_portc  = 501;
+    remote_n_portd  = 2153;
+  }
+);
+```
+
+### 6.2 Run the core network
 
 ```console
 cd ~/oai-cn5g-fed/docker-compose/
 python3 core-network.py --type start-basic --scenario 1
 ```
 
-### Allow IP forwarding
+### 6.3 Allow IP forwarding
 
 The OAI 5G core network creates a network interface called "demo-oai". For a monolithic version, where CN and gNB are in the same machine, everything works fine. However, placing the gNB in another machine, it will be necessary to allow IP packages forwarding on CN machine and add an IP route to the gNB machine.
 
@@ -478,28 +528,23 @@ To test it, ping any CN service from gNB machine, for example:
 ping 192.168.70.134
 ```
 
-### Run the gNB-CU on the virtual machine
+### 6.4 Run the gNB-CU on the virtual machine
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210_external.conf --sa -E --continuous-tx
 ```
 
-### Run the gNB-DU
+### 6.5 Run the gNB-DU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
-sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
+sudo ./nr-softmodem -O ~/oai-testbed/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210_external.conf --sa -E --continuous-tx
 ```
 
-### Run the UE
+### 6.6 Run the UE
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod --ue-fo-compensation --sa -E -O ~/oai-testbed/oai-cfg-files/ue.conf
 ```
-
-## Testing
-
-### Ping
-### iperf
