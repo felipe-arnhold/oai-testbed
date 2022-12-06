@@ -555,9 +555,9 @@ sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod -
 
 ## 9. Testing
 
-### 9.1. ping
+With the setup running, two tools can be used to test the UE/CN communication: `ping` and `iperf`. To perform a these tests, the IP address of UE must be know. This can be achieved running `ifconfig` on the UE machine (same as DU and CN) and search for the `oai-tun1` network interface (created by OAI-UE).
 
-To perform a ping test, the IP address of UE must be know. This can be achieved running `ifconfig` on the UE machine (same as DU and CN) and search for the `oai-tun1` network interface (created by OAI-UE).
+### 9.1. ping
 
 - For Uplink test, open a new terminal on UE machine and ping to CN. The interface `oai-tun1` must be defined.
 
@@ -566,7 +566,7 @@ ping 192.168.70.135 -I oai-tun1
 ```
 
 - For Downlink test, open a new terminal on CN and ping to UE through docker. Replace UE_IP to actual user equipment IP address.
-- 
+
 ```console
 docker exec -it oai-ext-dn ping UE_IP
 ```
