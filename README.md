@@ -381,9 +381,9 @@ local_s_if_name = "lo";
 local_s_address = "127.0.0.4";
 remote_s_address = "127.0.0.3";
 local_s_portc   = 501;
-local_s_portd   = 2152;
+local_s_portd   = 2153;
 remote_s_portc  = 500;
-remote_s_portd  = 2152;
+remote_s_portd  = 2153;
 ```
 
 Since the CU does not have RLC, MAC and PHY layers, the `MACRLCs`, `L1s` and `RUs` parametes must be removed.
@@ -404,9 +404,9 @@ MACRLCs = (
     local_n_address = "127.0.0.3";
     remote_n_address = "127.0.0.4";
     local_n_portc   = 500;
-    local_n_portd   = 2152;
+    local_n_portd   = 2153;
     remote_n_portc  = 501;
-    remote_n_portd  = 2152;
+    remote_n_portd  = 2153;
 
   }
 );
