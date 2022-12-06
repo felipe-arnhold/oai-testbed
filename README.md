@@ -365,7 +365,7 @@ remote_s_portd  = 2152;
 
 Since the CU does not have RLC, MAC and PHY layers, the `MACRLCs`, `L1s` and `RUs` parametes must be removed.
 
-### Prepare the DU condiguration file
+### Prepare the DU configuration file
 
 For DU, the F1 interface must be configured inside MACRLC configuration. This information must match the information defined in the CU configuration file. Now, the local is the DU IP and remote the CU IP.
 
@@ -424,16 +424,16 @@ sudo ./nr-uesoftmodem -r 106 --numerology 1 --band 78 -C 3619200000 --nokrnmod -
 In this scenario, the CU runs in a virtual machine, to simulate the CU/DU split in different PCs. The software used to run the CU is the Virtual Box, also with Ubuntu 20.04.5 LTS. The network interface was configured as bridge, so the VM will receive an IP inside the same network of main PC.
 Now, the interfaces configured to CU and DU must be updated, since localhost is not used.
 
-- Modifications on configuration files
+### Modifications on configuration files
 
-- Run the core network
+### Run the core network
 
 ```console
 cd ~/oai-cn5g-fed/docker-compose/
 python3 core-network.py --type start-basic --scenario 1
 ```
 
-- Note
+### Allow IP forwarding
 
 The OAI 5G core network creates a network interface called "demo-oai". For a monolithic version, where CN and gNB are in the same machine, everything works fine. However, placing the gNB in another machine, it will be necessary to allow IP packages forwarding on CN machine and add an IP route to the gNB machine.
 
@@ -453,21 +453,21 @@ To test it, ping any CN service from gNB machine, for example:
 ping 192.168.70.134
 ```
 
-- Run the gNB-CU on the virtual machine
+### Run the gNB-CU on the virtual machine
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.cu.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
-- Run the gNB-DU
+### Run the gNB-DU
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
 sudo ./nr-softmodem -O ~/oai-cfg-files/gnb.du.sa.band78.fr1.106PRB.usrpb210.conf --sa -E --continuous-tx
 ```
 
-- Run the UE
+### Run the UE
 
 ```console
 cd ~/openairinterface5g/cmake_targets/ran_build/build/
